@@ -51,7 +51,9 @@ a { color: var(--rust); text-decoration: none; }
 .kch-video-play-overlay svg { width: 44px; height: 44px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
 .kch-video-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
 .kch-review-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 14px rgba(43,36,32,0.08); }
-.kch-review-stars { color: #F5A623; font-size: 14px; letter-spacing: 1px; margin-bottom: 8px; }
+.kch-review-stars { color: #F5A623; font-size: 15px; letter-spacing: 1px; }
+#kch-reviews-scroll-inner::-webkit-scrollbar { width: 8px; }
+#kch-reviews-scroll-inner::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
 @media (max-width: 1080px) {
   .kch-nav-links { display: none !important; }
   .kch-header-cta { display: none !important; }
@@ -398,6 +400,9 @@ a { color: var(--rust); text-decoration: none; }
       </div>
       <div id="kch-reviews-loading" data-reveal style="text-align: center; padding: 20px 0; color: var(--gray); font-size: 14px;">Loading Google reviews…</div>
       <div id="kch-reviews-grid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;"></div>
+      <div id="kch-reviews-scroll" style="display: none; margin-top: 20px; border: 1px solid var(--line); border-radius: 16px; padding: 4px;">
+        <div id="kch-reviews-scroll-inner" style="max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px;"></div>
+      </div>
       <div id="kch-reviews-fallback" class="kch-card" style="display: none; padding: 36px 28px; text-align: center;">
         <p style="font-size: 14px; color: var(--gray); margin: 0 0 16px;">See our latest reviews directly on Google.</p>
         <a href="https://search.google.com/local/reviews?placeid=ChIJAQDEZR-5wjsRWp34KGm5guU" target="_blank" rel="noopener" class="kch-btn kch-btn-primary">Read Reviews on Google</a>
@@ -636,20 +641,62 @@ class Component extends DCLogic {
           const cta = document.getElementById('kch-reviews-cta');
           if (cta) cta.href = data.mapsUri;
         }
-        grid.style.display = 'grid';
-        grid.innerHTML = reviews.slice(0, 6).map(r => `
+        const sorted = reviews.slice().sort((a, b) => b.rating - a.rating);
+        const top = sorted.slice(0, 6);
+        const rest = sorted.slice(6);
+
+        const avatarColors = ['#DC5A14', '#3E8E4F', '#2F5FA8', '#6D4AAE', '#C0356F', '#E08E1F'];
+        const cardHtml = (r, i) => {
+          const initial = escapeHtml((r.author || 'G').trim().charAt(0).toUpperCase());
+          const avatar = r.photo
+            ? `<img src="${escapeHtml(r.photo)}" alt="${escapeHtml(r.author)}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />`
+            : `<div style="width: 40px; height: 40px; border-radius: 50%; background: ${avatarColors[i % avatarColors.length]}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">${initial}</div>`;
+          const uid = `kch-rev-${Math.random().toString(36).slice(2, 9)}`;
+          return `
           <div class="kch-review-card">
-            <div class="kch-review-stars">${starStr(r.rating)}</div>
-            <p style="font-size: 14px; line-height: 1.6; margin: 0 0 14px; font-style: italic; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;">"${escapeHtml(r.text)}"</p>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              ${r.photo ? `<img src="${escapeHtml(r.photo)}" alt="${escapeHtml(r.author)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />` : ''}
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+              ${avatar}
               <div>
-                <div style="font-weight: 600; font-size: 13.5px;">${escapeHtml(r.author)}</div>
-                ${r.relativeTime ? `<div style="font-size: 12px; color: var(--gray);">${escapeHtml(r.relativeTime)}</div>` : ''}
+                <div style="font-weight: 600; font-size: 14px;">${escapeHtml(r.author)}</div>
+                <div style="font-size: 12px; color: var(--gray);">Google review</div>
               </div>
             </div>
-          </div>
-        `).join('');
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span class="kch-review-stars">${starStr(r.rating)}</span>
+              ${r.relativeTime ? `<span style="font-size: 12px; color: var(--gray);">${escapeHtml(r.relativeTime)}</span>` : ''}
+            </div>
+            <p id="${uid}" class="kch-review-text" style="font-size: 14px; line-height: 1.6; margin: 0;">${escapeHtml(r.text)}</p>
+            <button type="button" class="kch-review-more-btn" data-target="${uid}" style="background: none; border: none; padding: 0; margin-top: 4px; color: var(--gray); font-weight: 600; font-size: 13px; cursor: pointer; display: none;">More</button>
+          </div>`;
+        };
+
+        grid.style.display = 'grid';
+        grid.innerHTML = top.map((r, i) => cardHtml(r, i)).join('');
+
+        const scrollWrap = document.getElementById('kch-reviews-scroll');
+        const scrollInner = document.getElementById('kch-reviews-scroll-inner');
+        if (rest.length && scrollWrap && scrollInner) {
+          scrollWrap.style.display = 'block';
+          scrollInner.innerHTML = rest.map((r, i) => cardHtml(r, i)).join('');
+        }
+
+        document.querySelectorAll('.kch-review-text').forEach(p => {
+          if (p.scrollHeight > p.clientHeight + 2) {
+            p.style.display = '-webkit-box';
+            p.style.webkitLineClamp = '4';
+            p.style.webkitBoxOrient = 'vertical';
+            p.style.overflow = 'hidden';
+            const btn = document.querySelector(`.kch-review-more-btn[data-target="${p.id}"]`);
+            if (btn) {
+              btn.style.display = 'inline';
+              btn.addEventListener('click', () => {
+                const expanded = p.style.webkitLineClamp === 'none';
+                p.style.webkitLineClamp = expanded ? '4' : 'none';
+                btn.textContent = expanded ? 'More' : 'Less';
+              });
+            }
+          }
+        });
       })
       .catch(() => {
         loading.style.display = 'none';
