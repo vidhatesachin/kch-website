@@ -31,7 +31,7 @@ async function handleReviews(env, ctx) {
   }
 
   const cache = caches.default;
-  const cacheKey = new Request("https://internal-cache/api/reviews");
+  const cacheKey = new Request("https://internal-cache/api/reviews-v2");
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
 
