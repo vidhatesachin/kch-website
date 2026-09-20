@@ -52,8 +52,10 @@ a { color: var(--rust); text-decoration: none; }
 .kch-video-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
 .kch-review-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 14px rgba(43,36,32,0.08); }
 .kch-review-stars { color: #F5A623; font-size: 15px; letter-spacing: 1px; }
-#kch-reviews-scroll-inner::-webkit-scrollbar { width: 8px; }
-#kch-reviews-scroll-inner::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+#kch-reviews-grid::-webkit-scrollbar { width: 8px; }
+#kch-reviews-grid::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+.kch-review-card { max-height: 300px; display: flex; flex-direction: column; overflow: hidden; }
+.kch-review-more-btn { flex-shrink: 0; }
 @media (max-width: 1080px) {
   .kch-nav-links { display: none !important; }
   .kch-header-cta { display: none !important; }
@@ -348,47 +350,8 @@ a { color: var(--rust); text-decoration: none; }
 
 <section id="testimonials" style="background: var(--sand); padding: 80px 32px;">
   <div style="max-width: 1160px; margin: 0 auto;">
-    <div data-reveal style="text-align: center; margin-bottom: 48px;">
-      <span class="kch-pill">Patients say</span>
-      <h2 style="font-family: var(--font-head); font-weight: 700; font-size: 34px; margin: 14px 0 0;">What patients say</h2>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-      <div class="kch-card" data-reveal>
-        <p style="font-size: 15px; line-height: 1.65; margin: 0 0 4px; font-style: italic;">"My family has taken homoeopathic treatment from Dr. Vivek Mali for over three years now. It works slowly, but it heals completely and thoroughly."</p>
-        <button type="button" class="kch-testimonial-readmore" data-testimonial="sunil" style="background: none; border: none; padding: 0; color: var(--rust); font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 14px;">Read full review</button>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="assets/testimonial-sunil.jpg" alt="Sunil Patil" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" />
-          <div>
-            <div style="font-weight: 600; font-size: 14px;">Sunil Patil</div>
-            <div style="font-size: 13px; color: var(--gray);">Director, Business Consulting, Aspen Technology — Magarpatta City, Pune</div>
-          </div>
-        </div>
-      </div>
-      <div class="kch-card" data-reveal>
-        <p style="font-size: 15px; line-height: 1.65; margin: 0 0 4px; font-style: italic;">"My son has been treated by Dr. Vivek Mali since 2013 for allergic asthma. Over the years, I've seen significant improvement in his health."</p>
-        <button type="button" class="kch-testimonial-readmore" data-testimonial="asish" style="background: none; border: none; padding: 0; color: var(--rust); font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 14px;">Read full review</button>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="assets/testimonial-asish.jpg" alt="Asish Barman" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" />
-          <div>
-            <div style="font-weight: 600; font-size: 14px;">Asish Barman</div>
-            <div style="font-size: 13px; color: var(--gray);">Project Manager, Mphasis Ltd.</div>
-          </div>
-        </div>
-      </div>
-      <div class="kch-card" data-reveal>
-        <p style="font-size: 15px; line-height: 1.65; margin: 0 0 4px; font-style: italic;">"Our whole family has been treated by Dr. Vivek and Dr. Swati Mali since 2011 — for every acute and chronic condition we turn to their care."</p>
-        <button type="button" class="kch-testimonial-readmore" data-testimonial="vishwas" style="background: none; border: none; padding: 0; color: var(--rust); font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 14px;">Read full review</button>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="assets/testimonial-vishwas.jpg" alt="Vishwas Devale" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" />
-          <div>
-            <div style="font-weight: 600; font-size: 14px;">Vishwas Devale</div>
-            <div style="font-size: 13px; color: var(--gray);">Financial Adviser</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div style="margin-top: 56px;">
+    <div style="margin-top: 0;">
       <div data-reveal style="text-align: center; margin-bottom: 28px;">
         <span class="kch-pill">Google reviews</span>
         <h3 style="font-family: var(--font-head); font-weight: 700; font-size: 26px; margin: 14px 0 0;">What people are saying on Google</h3>
@@ -397,11 +360,11 @@ a { color: var(--rust); text-decoration: none; }
         <span id="kch-reviews-stars" style="color: #F5A623; font-size: 18px; letter-spacing: 2px;"></span>
         <span id="kch-reviews-rating" style="font-weight: 700;"></span>
         <span id="kch-reviews-count" style="color: var(--gray);"></span>
+        <span style="color: var(--gray);">average rating</span>
       </div>
       <div id="kch-reviews-loading" data-reveal style="text-align: center; padding: 20px 0; color: var(--gray); font-size: 14px;">Loading Google reviews…</div>
-      <div id="kch-reviews-grid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;"></div>
-      <div id="kch-reviews-scroll" style="display: none; margin-top: 20px; border: 1px solid var(--line); border-radius: 16px; padding: 4px;">
-        <div id="kch-reviews-scroll-inner" style="max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px;"></div>
+      <div id="kch-reviews-scroll" style="display: none; border: 1px solid var(--line); border-radius: 16px; padding: 16px;">
+        <div id="kch-reviews-grid" style="max-height: 660px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding-right: 4px;"></div>
       </div>
       <div id="kch-reviews-fallback" class="kch-card" style="display: none; padding: 36px 28px; text-align: center;">
         <p style="font-size: 14px; color: var(--gray); margin: 0 0 16px;">See our latest reviews directly on Google.</p>
@@ -413,6 +376,14 @@ a { color: var(--rust); text-decoration: none; }
     </div>
   </div>
 </section>
+
+<div id="kch-review-modal" style="display: none; position: fixed; inset: 0; background: rgba(43,36,32,0.55); z-index: 300; align-items: center; justify-content: center; padding: 24px;">
+  <div style="background: #fff; border-radius: 20px; padding: 32px; max-width: 560px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.25); position: relative;">
+    <button id="kch-review-modal-close" type="button" aria-label="Close" style="position: absolute; top: 18px; right: 18px; background: none; border: none; font-size: 22px; line-height: 1; color: var(--gray); cursor: pointer;">&times;</button>
+    <div id="kch-review-modal-header" style="margin-bottom: 14px;"></div>
+    <p id="kch-review-modal-body" style="font-size: 15px; line-height: 1.7;"></p>
+  </div>
+</div>
 
 <section id="videos" style="padding: 80px 32px;">
   <div style="max-width: 1100px; margin: 0 auto;">
@@ -642,18 +613,23 @@ class Component extends DCLogic {
           if (cta) cta.href = data.mapsUri;
         }
         const sorted = reviews.slice().sort((a, b) => b.rating - a.rating);
-        const top = sorted.slice(0, 6);
-        const rest = sorted.slice(6);
 
         const avatarColors = ['#DC5A14', '#3E8E4F', '#2F5FA8', '#6D4AAE', '#C0356F', '#E08E1F'];
+        const modal = document.getElementById('kch-review-modal');
+        const modalHeader = document.getElementById('kch-review-modal-header');
+        const modalBody = document.getElementById('kch-review-modal-body');
+        const modalClose = document.getElementById('kch-review-modal-close');
+        if (modalClose) modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
+        if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
         const cardHtml = (r, i) => {
           const initial = escapeHtml((r.author || 'G').trim().charAt(0).toUpperCase());
           const avatar = r.photo
             ? `<img src="${escapeHtml(r.photo)}" alt="${escapeHtml(r.author)}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />`
             : `<div style="width: 40px; height: 40px; border-radius: 50%; background: ${avatarColors[i % avatarColors.length]}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">${initial}</div>`;
-          const uid = `kch-rev-${Math.random().toString(36).slice(2, 9)}`;
+          const uid = `kch-rev-${i}-${Math.random().toString(36).slice(2, 7)}`;
           return `
-          <div class="kch-review-card">
+          <div class="kch-review-card" data-review-index="${i}">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
               ${avatar}
               <div>
@@ -665,34 +641,31 @@ class Component extends DCLogic {
               <span class="kch-review-stars">${starStr(r.rating)}</span>
               ${r.relativeTime ? `<span style="font-size: 12px; color: var(--gray);">${escapeHtml(r.relativeTime)}</span>` : ''}
             </div>
-            <p id="${uid}" class="kch-review-text" style="font-size: 14px; line-height: 1.6; margin: 0;">${escapeHtml(r.text)}</p>
-            <button type="button" class="kch-review-more-btn" data-target="${uid}" style="background: none; border: none; padding: 0; margin-top: 4px; color: var(--gray); font-weight: 600; font-size: 13px; cursor: pointer; display: none;">More</button>
+            <p id="${uid}" class="kch-review-text" style="font-size: 14px; line-height: 1.6; margin: 0; flex: 1;">${escapeHtml(r.text)}</p>
+            <button type="button" class="kch-review-more-btn" data-target="${uid}" style="background: none; border: none; padding: 0; margin-top: 4px; color: var(--rust); font-weight: 600; font-size: 13px; cursor: pointer; display: none;">Read more</button>
           </div>`;
         };
 
-        grid.style.display = 'grid';
-        grid.innerHTML = top.map((r, i) => cardHtml(r, i)).join('');
-
         const scrollWrap = document.getElementById('kch-reviews-scroll');
-        const scrollInner = document.getElementById('kch-reviews-scroll-inner');
-        if (rest.length && scrollWrap && scrollInner) {
-          scrollWrap.style.display = 'block';
-          scrollInner.innerHTML = rest.map((r, i) => cardHtml(r, i)).join('');
-        }
+        if (scrollWrap) scrollWrap.style.display = 'block';
+        grid.innerHTML = sorted.map((r, i) => cardHtml(r, i)).join('');
 
-        document.querySelectorAll('.kch-review-text').forEach(p => {
+        grid.querySelectorAll('.kch-review-text').forEach(p => {
           if (p.scrollHeight > p.clientHeight + 2) {
             p.style.display = '-webkit-box';
-            p.style.webkitLineClamp = '4';
+            p.style.webkitLineClamp = '5';
             p.style.webkitBoxOrient = 'vertical';
             p.style.overflow = 'hidden';
-            const btn = document.querySelector(`.kch-review-more-btn[data-target="${p.id}"]`);
+            const btn = grid.querySelector(`.kch-review-more-btn[data-target="${p.id}"]`);
             if (btn) {
               btn.style.display = 'inline';
               btn.addEventListener('click', () => {
-                const expanded = p.style.webkitLineClamp === 'none';
-                p.style.webkitLineClamp = expanded ? '4' : 'none';
-                btn.textContent = expanded ? 'More' : 'Less';
+                const card = btn.closest('.kch-review-card');
+                const idx = parseInt(card.getAttribute('data-review-index'), 10);
+                const r = sorted[idx];
+                modalHeader.innerHTML = `<div style="font-weight: 700; font-size: 16px; margin-bottom: 4px;">${escapeHtml(r.author)}</div><span class="kch-review-stars">${starStr(r.rating)}</span> ${r.relativeTime ? `<span style="font-size: 13px; color: var(--gray);">${escapeHtml(r.relativeTime)}</span>` : ''}`;
+                modalBody.textContent = r.text;
+                modal.style.display = 'flex';
               });
             }
           }
