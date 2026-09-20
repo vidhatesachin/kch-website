@@ -36,11 +36,11 @@ async function handleReviews(env, ctx) {
   if (cached) return cached;
 
   try {
-    const placeUrl = `https://places.googleapis.com/v1/places/${PLACE_ID}`;
+    const placeUrl = `https://places.googleapis.com/v1/places/${PLACE_ID}?languageCode=en`;
     const res = await fetch(placeUrl, {
       headers: {
         "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": "id,displayName,rating,userRatingCount,googleMapsUri,reviews"
+        "X-Goog-FieldMask": "id,displayName,rating,userRatingCount,googleMapsUri,reviews.rating,reviews.text,reviews.originalText,reviews.authorAttribution,reviews.relativePublishTimeDescription,reviews.publishTime"
       }
     });
     if (!res.ok) {
