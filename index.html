@@ -651,11 +651,11 @@ class Component extends DCLogic {
         grid.innerHTML = sorted.map((r, i) => cardHtml(r, i)).join('');
 
         grid.querySelectorAll('.kch-review-text').forEach(p => {
+          p.style.display = '-webkit-box';
+          p.style.webkitLineClamp = '5';
+          p.style.webkitBoxOrient = 'vertical';
+          p.style.overflow = 'hidden';
           if (p.scrollHeight > p.clientHeight + 2) {
-            p.style.display = '-webkit-box';
-            p.style.webkitLineClamp = '5';
-            p.style.webkitBoxOrient = 'vertical';
-            p.style.overflow = 'hidden';
             const btn = grid.querySelector(`.kch-review-more-btn[data-target="${p.id}"]`);
             if (btn) {
               btn.style.display = 'inline';
