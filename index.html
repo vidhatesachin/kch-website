@@ -374,6 +374,26 @@ a { color: var(--rust); text-decoration: none; }
         <a id="kch-reviews-cta" href="https://search.google.com/local/reviews?placeid=ChIJAQDEZR-5wjsRWp34KGm5guU" target="_blank" rel="noopener" class="kch-btn kch-btn-secondary">See All Reviews on Google</a>
       </div>
     </div>
+
+    <div style="margin-top: 56px;">
+      <div data-reveal style="text-align: center; margin-bottom: 28px;">
+        <span class="kch-pill">Real results</span>
+        <h3 style="font-family: var(--font-head); font-weight: 700; font-size: 26px; margin: 14px 0 0;">Cured Cases Gallery</h3>
+      </div>
+      <div id="kch-gallery-grid" data-reveal style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;"></div>
+    </div>
+  </div>
+</section>
+
+<div id="kch-gallery-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 300; align-items: center; justify-content: center; padding: 20px;">
+  <button id="kch-gallery-close" type="button" aria-label="Close" style="position: absolute; top: 16px; right: 20px; background: none; border: none; color: #fff; font-size: 32px; line-height: 1; cursor: pointer; z-index: 2;">&times;</button>
+  <button id="kch-gallery-prev" type="button" aria-label="Previous" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; z-index: 2;">&#8249;</button>
+  <button id="kch-gallery-next" type="button" aria-label="Next" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; z-index: 2;">&#8250;</button>
+  <div style="max-width: 96vw; max-height: 90vh; text-align: center;">
+    <img id="kch-gallery-img" src="" alt="" style="max-width: 96vw; max-height: 78vh; width: auto; object-fit: contain; border-radius: 6px;" />
+    <div id="kch-gallery-caption" style="color: #fff; margin-top: 14px; font-size: 15px; font-weight: 600;"></div>
+  </div>
+</div>
   </div>
 </section>
 
@@ -677,6 +697,58 @@ class Component extends DCLogic {
       });
   }
 
+  initGallery() {
+    const grid = document.getElementById('kch-gallery-grid');
+    if (!grid) return;
+    const items = [
+      { src: 'assets/gallery/alopecia-typhoid.jpg', label: 'Alopecia (Hair Loss) After Typhoid' },
+      { src: 'assets/gallery/alopecia-areata.jpg', label: 'Alopecia Areata' },
+      { src: 'assets/gallery/hair-regrowth.jpg', label: 'Hair Regrowth' },
+      { src: 'assets/gallery/scalp-eruptions.jpg', label: 'Scalp Eruptions' },
+      { src: 'assets/gallery/psoriasis.jpg', label: 'Psoriasis (Hands)' },
+      { src: 'assets/gallery/skin-eruptions.jpg', label: 'Skin Eruptions' },
+      { src: 'assets/gallery/vitiligo.jpg', label: 'Vitiligo' },
+      { src: 'assets/gallery/cracked-heels.jpg', label: 'Cracked Heels' },
+      { src: 'assets/gallery/goitre-1.jpg', label: 'Thyroid Goitre' },
+      { src: 'assets/gallery/goitre-2.jpg', label: 'Thyroid Goitre' },
+      { src: 'assets/gallery/oral-cyst.jpg', label: 'Oral / Tongue Cyst' },
+      { src: 'assets/gallery/ear-infection.jpg', label: 'Ear Infection (Otitis Media)' },
+      { src: 'assets/gallery/tumour.jpg', label: 'Tumour' },
+      { src: 'assets/gallery/ovarian-cyst.jpg', label: 'Ovarian Cyst — Ultrasound Report' },
+      { src: 'assets/gallery/adenomyosis.jpg', label: 'Adenomyosis — Ultrasound Report' }
+    ];
+    grid.innerHTML = items.map((it, i) => `
+      <button type="button" class="kch-gallery-thumb" data-index="${i}" style="border: none; padding: 0; cursor: pointer; border-radius: 12px; overflow: hidden; position: relative; background: #000; aspect-ratio: 4/3;">
+        <img src="${it.src}" alt="${it.label}" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy" />
+        <span style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.75), transparent); color: #fff; font-size: 12.5px; font-weight: 600; padding: 18px 10px 8px; text-align: left;">${it.label}</span>
+      </button>
+    `).join('');
+
+    const modal = document.getElementById('kch-gallery-modal');
+    const imgEl = document.getElementById('kch-gallery-img');
+    const captionEl = document.getElementById('kch-gallery-caption');
+    let currentIndex = 0;
+    const show = (i) => {
+      currentIndex = (i + items.length) % items.length;
+      imgEl.src = items[currentIndex].src;
+      imgEl.alt = items[currentIndex].label;
+      captionEl.textContent = `${items[currentIndex].label}  ·  ${currentIndex + 1} / ${items.length}`;
+    };
+    grid.querySelectorAll('.kch-gallery-thumb').forEach(btn => {
+      btn.addEventListener('click', () => { show(parseInt(btn.getAttribute('data-index'), 10)); modal.style.display = 'flex'; });
+    });
+    document.getElementById('kch-gallery-prev').addEventListener('click', () => show(currentIndex - 1));
+    document.getElementById('kch-gallery-next').addEventListener('click', () => show(currentIndex + 1));
+    document.getElementById('kch-gallery-close').addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+    document.addEventListener('keydown', (e) => {
+      if (modal.style.display !== 'flex') return;
+      if (e.key === 'Escape') modal.style.display = 'none';
+      if (e.key === 'ArrowLeft') show(currentIndex - 1);
+      if (e.key === 'ArrowRight') show(currentIndex + 1);
+    });
+  }
+
   initAppointmentForm() {
     const form = document.getElementById('kch-appointment-form');
     if (!form) return;
@@ -709,6 +781,7 @@ class Component extends DCLogic {
     this.initVideoSection();
     this.initReviewsSection();
     this.initAppointmentForm();
+    this.initGallery();
     const root = this._rootEl || document;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const items = Array.from(document.querySelectorAll('[data-reveal]'));
