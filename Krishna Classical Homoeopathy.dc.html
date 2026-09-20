@@ -50,6 +50,8 @@ a { color: var(--rust); text-decoration: none; }
 .kch-video-play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.15); }
 .kch-video-play-overlay svg { width: 44px; height: 44px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
 .kch-video-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.kch-review-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 14px rgba(43,36,32,0.08); }
+.kch-review-stars { color: #F5A623; font-size: 14px; letter-spacing: 1px; margin-bottom: 8px; }
 @media (max-width: 1080px) {
   .kch-nav-links { display: none !important; }
   .kch-header-cta { display: none !important; }
@@ -383,6 +385,27 @@ a { color: var(--rust); text-decoration: none; }
         </div>
       </div>
     </div>
+
+    <div style="margin-top: 56px;">
+      <div data-reveal style="text-align: center; margin-bottom: 28px;">
+        <span class="kch-pill">Google reviews</span>
+        <h3 style="font-family: var(--font-head); font-weight: 700; font-size: 26px; margin: 14px 0 0;">What people are saying on Google</h3>
+      </div>
+      <div id="kch-reviews-summary" data-reveal style="display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px; font-size: 15px;">
+        <span id="kch-reviews-stars" style="color: #F5A623; font-size: 18px; letter-spacing: 2px;"></span>
+        <span id="kch-reviews-rating" style="font-weight: 700;"></span>
+        <span id="kch-reviews-count" style="color: var(--gray);"></span>
+      </div>
+      <div id="kch-reviews-loading" data-reveal style="text-align: center; padding: 20px 0; color: var(--gray); font-size: 14px;">Loading Google reviews…</div>
+      <div id="kch-reviews-grid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;"></div>
+      <div id="kch-reviews-fallback" class="kch-card" style="display: none; padding: 36px 28px; text-align: center;">
+        <p style="font-size: 14px; color: var(--gray); margin: 0 0 16px;">See our latest reviews directly on Google.</p>
+        <a href="https://search.google.com/local/reviews?placeid=ChIJAQDEZR-5wjsRWp34KGm5guU" target="_blank" rel="noopener" class="kch-btn kch-btn-primary">Read Reviews on Google</a>
+      </div>
+      <div data-reveal style="text-align: center; margin-top: 24px;">
+        <a id="kch-reviews-cta" href="https://search.google.com/local/reviews?placeid=ChIJAQDEZR-5wjsRWp34KGm5guU" target="_blank" rel="noopener" class="kch-btn kch-btn-secondary">See All Reviews on Google</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -417,9 +440,9 @@ a { color: var(--rust); text-decoration: none; }
 </section>
 
 <div id="kch-video-modal" style="display: none; position: fixed; inset: 0; background: rgba(43,36,32,0.75); z-index: 300; align-items: center; justify-content: center; padding: 24px;">
-  <div style="background: #000; border-radius: 12px; max-width: 900px; width: 100%; position: relative;">
+  <div id="kch-video-modal-box" style="background: #000; border-radius: 12px; max-width: 900px; width: 100%; position: relative; transition: max-width 0.15s ease;">
     <button id="kch-video-modal-close" type="button" aria-label="Close" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 28px; line-height: 1; cursor: pointer;">&times;</button>
-    <div style="position: relative; width: 100%; padding-top: 56.25%;">
+    <div id="kch-video-modal-ratio" style="position: relative; width: 100%; padding-top: 56.25%;">
       <iframe id="kch-video-modal-iframe" src="" title="Video player" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; border-radius: 12px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="allowfullscreen"></iframe>
     </div>
   </div>
@@ -530,7 +553,7 @@ class Component extends DCLogic {
       empty.style.display = 'none';
       grid.style.display = 'grid';
       grid.innerHTML = items.map(v => `
-        <div class="kch-video-card" data-video-id="${escapeHtml(v.id)}">
+        <div class="kch-video-card" data-video-id="${escapeHtml(v.id)}" data-video-type="${v.type}">
           <div class="kch-video-thumb-wrap${v.type === 'short' ? ' short' : ''}">
             <img src="${escapeHtml(v.thumbnail)}" alt="${escapeHtml(v.title)}" loading="lazy" />
             <span class="kch-video-badge">${v.type === 'short' ? 'Short' : 'Video'}</span>
@@ -542,9 +565,14 @@ class Component extends DCLogic {
           </div>
         </div>
       `).join('');
+      const modalBox = document.getElementById('kch-video-modal-box');
+      const modalRatioWrap = document.getElementById('kch-video-modal-ratio');
       grid.querySelectorAll('.kch-video-card').forEach(card => {
         card.addEventListener('click', () => {
           modalIframe.src = `https://www.youtube.com/embed/${card.getAttribute('data-video-id')}?autoplay=1`;
+          const isShort = card.getAttribute('data-video-type') === 'short';
+          if (modalBox) modalBox.style.maxWidth = isShort ? '400px' : '900px';
+          if (modalRatioWrap) modalRatioWrap.style.paddingTop = isShort ? '177.78%' : '56.25%';
           modal.style.display = 'flex';
         });
       });
@@ -583,8 +611,55 @@ class Component extends DCLogic {
       });
   }
 
+  initReviewsSection() {
+    const grid = document.getElementById('kch-reviews-grid');
+    const loading = document.getElementById('kch-reviews-loading');
+    const fallback = document.getElementById('kch-reviews-fallback');
+    const summary = document.getElementById('kch-reviews-summary');
+    if (!grid) return;
+    const escapeHtml = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const starStr = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+
+    fetch('/api/reviews')
+      .then(res => { if (!res.ok) throw new Error('bad response'); return res.json(); })
+      .then(data => {
+        const reviews = data.reviews || [];
+        if (!reviews.length) throw new Error('empty');
+        loading.style.display = 'none';
+        if (data.rating) {
+          summary.style.display = 'flex';
+          document.getElementById('kch-reviews-stars').textContent = starStr(data.rating);
+          document.getElementById('kch-reviews-rating').textContent = data.rating.toFixed(1);
+          document.getElementById('kch-reviews-count').textContent = `(${data.userRatingCount || 0} reviews)`;
+        }
+        if (data.mapsUri) {
+          const cta = document.getElementById('kch-reviews-cta');
+          if (cta) cta.href = data.mapsUri;
+        }
+        grid.style.display = 'grid';
+        grid.innerHTML = reviews.slice(0, 6).map(r => `
+          <div class="kch-review-card">
+            <div class="kch-review-stars">${starStr(r.rating)}</div>
+            <p style="font-size: 14px; line-height: 1.6; margin: 0 0 14px; font-style: italic; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;">"${escapeHtml(r.text)}"</p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              ${r.photo ? `<img src="${escapeHtml(r.photo)}" alt="${escapeHtml(r.author)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />` : ''}
+              <div>
+                <div style="font-weight: 600; font-size: 13.5px;">${escapeHtml(r.author)}</div>
+                ${r.relativeTime ? `<div style="font-size: 12px; color: var(--gray);">${escapeHtml(r.relativeTime)}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
+        loading.style.display = 'none';
+        fallback.style.display = 'block';
+      });
+  }
+
   componentDidMount() {
     this.initVideoSection();
+    this.initReviewsSection();
     const root = this._rootEl || document;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const items = Array.from(document.querySelectorAll('[data-reveal]'));

@@ -13,10 +13,61 @@ export default {
     if (url.pathname === "/api/youtube") {
       return handleYoutube(env, ctx);
     }
+    if (url.pathname === "/api/reviews") {
+      return handleReviews(env, ctx);
+    }
     // Everything else: serve the static site exactly as before
     return env.ASSETS.fetch(request);
   }
 };
+
+const PLACE_ID = "ChIJAQDEZR-5wjsRWp34KGm5guU";
+const REVIEWS_CACHE_TTL_SECONDS = 21600; // 6 hours
+
+async function handleReviews(env, ctx) {
+  const apiKey = env.GOOGLE_PLACES_API_KEY;
+  if (!apiKey) {
+    return json({ error: "GOOGLE_PLACES_API_KEY not configured" }, 500);
+  }
+
+  const cache = caches.default;
+  const cacheKey = new Request("https://internal-cache/api/reviews");
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const placeUrl = `https://places.googleapis.com/v1/places/${PLACE_ID}`;
+    const res = await fetch(placeUrl, {
+      headers: {
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "id,displayName,rating,userRatingCount,googleMapsUri,reviews"
+      }
+    });
+    if (!res.ok) {
+      const errBody = await safeJson(res);
+      return json({ error: "Google Places request failed", details: errBody }, 502);
+    }
+    const data = await res.json();
+    const reviews = (data.reviews || []).map(r => ({
+      author: (r.authorAttribution && r.authorAttribution.displayName) || "Google user",
+      photo: (r.authorAttribution && r.authorAttribution.photoUri) || "",
+      rating: r.rating || 5,
+      text: (r.text && r.text.text) || (r.originalText && r.originalText.text) || "",
+      relativeTime: r.relativePublishTimeDescription || ""
+    }));
+
+    const response = json({
+      rating: data.rating || null,
+      userRatingCount: data.userRatingCount || 0,
+      mapsUri: data.googleMapsUri || `https://search.google.com/local/reviews?placeid=${PLACE_ID}`,
+      reviews
+    });
+    ctx.waitUntil(cache.put(cacheKey, response.clone(), { expirationTtl: REVIEWS_CACHE_TTL_SECONDS }));
+    return response;
+  } catch (err) {
+    return json({ error: "Unexpected error", details: String(err) }, 500);
+  }
+}
 
 async function handleYoutube(env, ctx) {
   const apiKey = env.YOUTUBE_API_KEY;
