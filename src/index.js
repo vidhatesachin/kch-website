@@ -16,8 +16,15 @@ export default {
     if (url.pathname === "/api/reviews") {
       return handleReviews(env, ctx);
     }
-    // Everything else: serve the static site exactly as before
-    return env.ASSETS.fetch(request);
+    // Everything else: serve the static site
+    const res = await env.ASSETS.fetch(request);
+    // Keep the .workers.dev staging copy out of search results (custom domain is canonical)
+    if (url.hostname.endsWith(".workers.dev")) {
+      const r = new Response(res.body, res);
+      r.headers.set("X-Robots-Tag", "noindex, nofollow");
+      return r;
+    }
+    return res;
   }
 };
 
