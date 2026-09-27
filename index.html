@@ -213,6 +213,8 @@ a { color: var(--rust); text-decoration: none; }
   #kch-header { padding-left: 20px !important; padding-right: 20px !important; }
   section h2 { font-size: 26px !important; }
   .kch-card { padding: 20px !important; }
+  .kch-card:has(> img[src*="assets/cond-"]) { padding-right: 88px !important; }
+  .kch-card > img[src*="assets/cond-"] { width: 60px !important; height: 60px !important; top: 16px !important; right: 16px !important; }
 }
 @media (max-width: 560px) { .kch-form-row { grid-template-columns: 1fr !important; } }
 @media (max-width: 900px) {
@@ -711,7 +713,11 @@ a { color: var(--rust); text-decoration: none; }
     <div id="kch-cond-body" style="padding: 18px 24px 24px; overflow-y: auto; flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; align-content: start;"></div>
     <div style="padding: 14px 24px; border-top: 1px solid #eee4da; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: #fbf8f5;">
       <span style="font-size: 13.5px; color: var(--gray);">Don't see your condition? Ask the doctor.</span>
-      <a id="kch-cond-cta" href="javascript:void(0)" class="kch-btn kch-btn-primary" style="padding: 10px 20px; font-size: 14px;">Book an Appointment</a>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <a id="kch-cond-wa" data-direct="1" href="https://wa.me/918308935060?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment%20at%20Krishna%20Classical%20Homoeopathy%20Clinic." target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp" style="display: inline-flex; align-items: center; justify-content: center; width: 37px; height: 37px; border-radius: 50%; background: #25D366; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.76.46 3.42 1.26 4.86L2 22l5.29-1.26A9.95 9.95 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10zm5.86 14.14c-.24.68-1.4 1.3-1.94 1.38-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.66-.62-2.92-1.26-4.82-4.2-4.96-4.4-.14-.2-1.18-1.57-1.18-3s.74-2.12 1-2.42c.26-.28.58-.36.78-.36h.56c.18 0 .42-.04.64.5.24.6.82 2.06.9 2.2.08.16.12.34.02.54-.5 1.06-1.06 1.02-.78 1.5.98 1.68 1.78 2.32 3.24 3.06.24.12.4.1.56-.06.16-.16.68-.78.86-1.04.18-.26.36-.22.6-.14.24.08 1.56.74 1.82.88.26.14.44.2.5.32.08.12.08.68-.16 1.36z"/></svg></a>
+        <a id="kch-cond-call" data-direct="1" href="tel:+918308935060" aria-label="Call" title="Call" style="display: inline-flex; align-items: center; justify-content: center; width: 37px; height: 37px; border-radius: 50%; background: #1E6FD9; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
+        <a id="kch-cond-cta" href="javascript:void(0)" class="kch-btn kch-btn-primary" style="padding: 10px 20px; font-size: 14px;">Book an Appointment</a>
+      </div>
     </div>
   </div>
 </div>
@@ -1213,7 +1219,7 @@ class Component extends DCLogic {
 
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a[href^="tel:"]');
-      if (!link || link.id === 'kch-call-action') return;
+      if (!link || link.id === 'kch-call-action' || link.dataset.direct) return;
       const tel = link.getAttribute('href');
       const digits = tel.replace('tel:', '').replace(/[^0-9]/g, '');
       if (!digits.endsWith('8308935060')) return;
