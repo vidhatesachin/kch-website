@@ -10,6 +10,11 @@ const MAX_RESULTS = 24;
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    // www → root domain (single canonical address for SEO)
+    if (url.hostname.startsWith("www.")) {
+      url.hostname = url.hostname.slice(4);
+      return Response.redirect(url.toString(), 301);
+    }
     if (url.pathname === "/api/youtube") {
       return handleYoutube(env, ctx);
     }
